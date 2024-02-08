@@ -17,6 +17,8 @@ export default {
 			}
 		}
 
+		if (message.sticker) return
+
 		await bot.sendMessage(FORWARD_GROUP, 'From: ' + message.from.id, {
 			entities: [{
 				type: 'text_mention',
