@@ -1,0 +1,1 @@
+export const FORWARD_GROUP = -1001878911753;

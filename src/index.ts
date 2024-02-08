@@ -8,25 +8,27 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import handle from "./handlers/handle";
+import Bot from "./requests/bot";
+import { TelegramUpdate } from "./types/telegram";
+
 export interface Env {
-	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
-	//
-	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-	// MY_DURABLE_OBJECT: DurableObjectNamespace;
-	//
-	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-	// MY_BUCKET: R2Bucket;
-	//
-	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-	// MY_SERVICE: Fetcher;
-	//
-	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-	// MY_QUEUE: Queue;
+	SECRET: string;
+	BOT_TOKEN: string;
 }
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		return new Response('Hello World!');
+		if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== env.SECRET) {
+			return new Response(undefined, { status: 401 });
+		}
+
+		const bot = new Bot(env.BOT_TOKEN);
+		const req = (await request.json()) as TelegramUpdate;
+		if (req.message) {
+			await handle.message(req.message, bot);
+		}
+
+		return new Response();
 	},
 };
